@@ -1,6 +1,8 @@
 .data
     UART: .dword 0x10000000
-    hello: .string "Hello, World!\n"
+    SIFIVE_TEST_BASE: .dword 0x100000
+    POWER_OFF: .dword 0x5555
+    hello: .string "Hello, World! EITA PEGAAAAAA\n"
 
 .bss
     hart0_stack: .space 4096
@@ -23,24 +25,19 @@ _start:
 
     la sp, hart0_stack_top
 
+    la a0, UART
+    ld a0, 0(a0)
+    call uart_init
 
     la a0, hello
-    ld t1, UART
+    call uart_printf
 
-    1:
-    lbu t2, 5(t1)
-    andi t2, t2, 0x20
-    beqz t2, 1b
-    lbu t0, 0(a0)
-    beqz t0, 1f
-    sb t0, 0(t1)
-    addi a0, a0, 1
-    j 1b
-    
-    1: 
-
-
-
+power_off:
+    la t0, SIFIVE_TEST_BASE
+    ld t0, 0(t0)
+    la t1, POWER_OFF
+    ld t1, 0(t1)
+    sw t1, 0(t0)
 
 pause_hart:
     wfi

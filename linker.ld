@@ -1,5 +1,4 @@
 ENTRY(_start)
-INPUT(boot.o)
 OUTPUT(kernel.elf)
 
 SECTIONS {
