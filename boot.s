@@ -2,7 +2,7 @@
     UART: .dword 0x10000000
     SIFIVE_TEST_BASE: .dword 0x100000
     POWER_OFF: .dword 0x5555
-    hello: .string "Hello, World! EITA PEGAAAAAA\n"
+    hello: .string "Hello, World!\n"
 
 .bss
     hart0_stack: .space 4096

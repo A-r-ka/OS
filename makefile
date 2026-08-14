@@ -3,13 +3,13 @@ CC = $(PREFIX)gcc
 LD = $(PREFIX)ld
 HARTS ?= 4
 ASMS = $(wildcard *.s) $(wildcard drivers/*.s)
-OBJ = $(patsubst %.s, %.o, $(ASMS))
+OBJ = $(patsubst %.s, ./obj_compiled/%.o, $(ASMS))
 
 CFLAGS = -march=rv64g -mabi=lp64 -mcmodel=medany -ffreestanding -nostdlib -g
 
 all: kernel.elf
 
-%.o: %.s
+./obj_compiled/%.o: %.s
 	$(CC) $(CFLAGS) -c $< -o $@
 
 kernel.elf: linker.ld $(OBJ)
