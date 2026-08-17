@@ -135,6 +135,7 @@ Em outro terminal, conecte o GDB (GNU Linux):
 gdb-multiarch kernel.elf
 (gdb) target remote :1234
 (gdb) continue
+```
 
 Em outro terminal, conecte o GDB (MacOS):
 ```bash
