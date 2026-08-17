@@ -49,8 +49,8 @@ sudo pacman -S riscv64-elf-gcc riscv64-elf-binutils
 
 #### macOS (Homebrew)
 ```bash
-brew tap riscv-software-src/riscv
-brew install riscv-tools
+brew tap riscv/riscv
+brew install riscv/riscv/riscv-tools
 ```
 
 #### Windows
@@ -86,7 +86,7 @@ sudo apt install qemu-system-misc
 
 Clone o repositório e entre na pasta:
 ```bash
-git clone https://github.com/<seu-usuario>/OS.git
+git clone https://github.com/A-r-ka/OS.git
 cd OS
 ```
 
@@ -120,14 +120,25 @@ make run HARTS=2
 
 ### Debug com GDB
 
+Instalar o GDB (MacOS):
+```bash
+brew install riscv64-elf-gdb
+```
+
 Inicia o QEMU aguardando conexão do GDB na porta `1234`:
 ```bash
 make debug
 ```
 
-Em outro terminal, conecte o GDB:
+Em outro terminal, conecte o GDB (GNU Linux):
 ```bash
-riscv64-unknown-elf-gdb kernel.elf
+gdb-multiarch kernel.elf
+(gdb) target remote :1234
+(gdb) continue
+
+Em outro terminal, conecte o GDB (MacOS):
+```bash
+riscv64-elf-gdb kernel.elf
 (gdb) target remote :1234
 (gdb) continue
 ```
