@@ -29,8 +29,8 @@ _start:
     ld a0, 0(a0)
     call uart_init
 
-    la a0, hello
-    call uart_printf
+    li a0, 0x12345678
+    call uart_putdec
 
 power_off:
     la t0, SIFIVE_TEST_BASE

@@ -1,0 +1,159 @@
+.equ UART_LSR, 5
+.equ UART_LSR_TX_READY, 0x20
+
+.bss
+    UART_BASE: .space 8
+
+.text
+
+# a0: UART base address
+.globl uart_init
+uart_init:
+    la t0, UART_BASE
+    sd a0, 0(t0)
+    ret
+
+# a0: hexadecimal value to print
+.globl uart_puthex
+uart_puthex:
+    addi sp, sp, -48
+    sd ra, 40(sp)
+    sd s0, 32(sp)
+    sd s1, 24(sp)
+    sd s2, 16(sp)
+    sd s3, 8(sp)
+    mv a1, a0
+
+    li a0, 48
+    call uart_putc
+    li a0, 120
+    call uart_putc
+
+    li s0, 16
+    li s1, 0xF
+    li s2, 0x4
+    li s3, 58
+
+    1:
+    addi s0, s0, -1
+    mul t0, s0, s2
+    srl t1, a1, t0
+    and t1, s1, t1
+    addi t1, t1, 48
+    blt t1, s3, 2f
+    addi t1, t1, 7
+    2:
+    mv a0, t1
+    call uart_putc
+    bnez s0, 1b
+
+    ld s3, 8(sp)
+    ld s2, 16(sp)
+    ld s1, 24(sp)
+    ld s0, 32(sp)
+    ld ra, 40(sp)
+    addi sp, sp, 48
+    ret
+    
+# a0: decimal value to print
+.globl uart_putdec
+uart_putdec:
+    addi sp, sp, -32
+    sd ra, 24(sp)
+    sd s0, 16(sp)
+    sd s1, 8(sp)
+    li s1, 0
+    li s0, 10
+    mv s1, zero
+    
+    mv a1, a0
+    bnez a1, 1f
+    li a0, 48
+    call uart_putc
+    ld s1, 8(sp)
+    ld s0, 16(sp)
+    ld ra, 24(sp)
+    addi sp, sp, 32
+    ret
+
+    1:
+    li t0, 0
+    addi sp, sp, -1
+    addi s1, s1, 1
+    sb t0, 0(sp)
+    2:
+    div a2, a1, s0
+    rem a1, a1, s0
+    addi a1, a1, 48
+    addi sp, sp, -1
+    addi s1, s1, 1
+    sb a1, 0(sp)
+    mv a1, a2
+    bnez a1, 2b
+
+    mv a0, sp
+    call uart_printf
+    add sp, sp, s1
+
+    ld s1, 8(sp)
+    ld s0, 16(sp)
+    ld ra, 24(sp)
+    addi sp, sp, 32
+    ret
+
+
+
+# a0: character to send
+.globl uart_putc
+uart_putc:
+    la t0, UART_BASE
+    ld t0, 0(t0)
+    li t1, UART_LSR
+    add t1, t0, t1
+    li t2, UART_LSR_TX_READY
+
+    1:
+    lbu t3, 0(t1)
+    and t3, t2, t3
+    beqz t3, 1b
+    sb a0, 0(t0)
+
+    ret
+
+# a0: character to send
+# a1: pointer to UART base address
+uart_putc_address:
+    li t0, UART_LSR
+    add t0, a1, t0
+    li t1, UART_LSR_TX_READY
+
+    1:
+    lbu t2, 0(t0)
+    and t2, t1, t2
+    beqz t2, 1b
+    sb a0, 0(a1)
+
+    ret
+
+# a0: pointer to null-terminated string
+.globl uart_printf
+uart_printf:
+    addi sp, sp, -16
+    sd ra, 8(sp)
+    la a1, UART_BASE
+    ld a1, 0(a1)
+
+    mv a2, a0
+    1:
+    lbu t0, 0(a2)
+    beqz t0, 1f
+    mv a0, t0
+    call uart_putc_address
+    addi a2, a2, 1
+    j 1b
+    1:
+
+    ld ra, 8(sp)
+    addi sp, sp, 16
+    ret
+
