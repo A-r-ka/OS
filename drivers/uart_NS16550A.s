@@ -24,10 +24,20 @@ uart_puthex:
     sd s3, 8(sp)
     mv a1, a0
 
-    li a0, 48
-    call uart_putc
-    li a0, 120
-    call uart_putc
+    addi sp, sp, -19
+    mv t0, zero
+    li t2, 19
+
+    1:
+    addi t0, t0, 1
+    add t1, t0, sp
+    sb zero, (t1)
+    bne t0, t2, 1b
+
+    li t2, 48
+    sb t2, 0(sp)
+    li t2, 120
+    sb t2, 1(sp)
 
     li s0, 16
     li s1, 0xF
@@ -35,6 +45,9 @@ uart_puthex:
     li s3, 58
 
     1:
+    addi t2, s0, -18
+    neg t2, t2
+    add t2, sp, t2
     addi s0, s0, -1
     mul t0, s0, s2
     srl t1, a1, t0
@@ -43,9 +56,13 @@ uart_puthex:
     blt t1, s3, 2f
     addi t1, t1, 7
     2:
-    mv a0, t1
-    call uart_putc
+    sb t1, 0(t2)
     bnez s0, 1b
+
+    mv a0, sp
+    call uart_printf
+
+    addi sp, sp, 19
 
     ld s3, 8(sp)
     ld s2, 16(sp)

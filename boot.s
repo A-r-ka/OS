@@ -1,7 +1,8 @@
+.equ SIFIVE_TEST_BASE, 0x100000
+.equ POWER_OFF, 0x5555
+.equ UART, 0x10000000
+
 .data
-    UART: .dword 0x10000000
-    SIFIVE_TEST_BASE: .dword 0x100000
-    POWER_OFF: .dword 0x5555
     hello: .string "Hello, World!\n"
 
 .bss
@@ -25,18 +26,15 @@ _start:
 
     la sp, hart0_stack_top
 
-    la a0, UART
-    ld a0, 0(a0)
+    li a0, UART
     call uart_init
 
-    li a0, 0x12345678
-    call uart_putdec
+    mv a0, sp
+    call uart_puthex
 
 power_off:
-    la t0, SIFIVE_TEST_BASE
-    ld t0, 0(t0)
-    la t1, POWER_OFF
-    ld t1, 0(t1)
+    li t0, SIFIVE_TEST_BASE
+    li t1, POWER_OFF
     sw t1, 0(t0)
 
 pause_hart:
