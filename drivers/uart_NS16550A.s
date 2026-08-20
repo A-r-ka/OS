@@ -1,28 +1,50 @@
+# LSR Register (READ)
 .equ UART_LSR, 0x5
-.equ UART_FIFO, 0x2
-.equ UART_FIFO_TRIGGER_LEVEL, 0x6
-.equ UART_FIFO_ENABLE, 0x1
+.equ UART_LSR_DATA_READY, 0x1
 .equ UART_LSR_TX_READY, 0x20
+
+# FIFO Register (WRITE)
+.equ UART_FIFO, 0x2
+.equ UART_FIFO_TRIGGER_LEVEL, 0x6    # location of the bits
+.equ UART_FIFO_ENABLE, 0x1
 
 .bss
     UART_BASE: .space 8
 
+
 .text
 
+# return (a0): character readed
 .globl uart_pio_getc
 uart_pio_getc:
+    la t0, UART_BASE
+    ld t0, 0(t0)
+    addi t1, t0, UART_LSR
+    
+    1:
+    lbu t2, 0(t1)
+    andi t2, t2, UART_LSR_DATA_READY
+    beqz t2, 1b
+    
+    lbu a0, 0(t0)
+    ret
+
 
 
 # a0: UART base address
 # a1: FIFO enable (also size)
+# Supported sizes for FIFO:    value  |  characters
+#                                1    |      1
+#                                2    |      4
+#                                3    |      8
+#                                4    |     14
 .globl uart_init
 uart_init:
     la t0, UART_BASE
     sd a0, 0(t0)
-    bez a1, 1f
+    beqz a1, 1f
 
-    li t1, UART_FIFO
-    add t1, a0, t1
+    addi t1, a0, UART_FIFO
     srli a1, a1, UART_FIFO_TRIGGER_LEVEL
     ori a1, a1, UART_FIFO_ENABLE
     sb a1, 0(t1)
@@ -77,7 +99,7 @@ uart_puthex:
     bnez s0, 1b
 
     mv a0, sp
-    call uart_printf
+    call uart_pio_printf
 
     addi sp, sp, 19
 
@@ -103,7 +125,7 @@ uart_putdec:
     mv a1, a0
     bnez a1, 1f
     li a0, 48
-    call uart_putc
+    call uart_pio_putc
     ld s1, 8(sp)
     ld s0, 16(sp)
     ld ra, 24(sp)
@@ -126,7 +148,7 @@ uart_putdec:
     bnez a1, 2b
 
     mv a0, sp
-    call uart_printf
+    call uart_pio_printf
     add sp, sp, s1
 
     ld s1, 8(sp)
@@ -138,18 +160,17 @@ uart_putdec:
 
 
 # a0: character to send
-.globl uart_putc
-uart_putc:
+.globl uart_pio_putc
+uart_pio_putc:
     la t0, UART_BASE
     ld t0, 0(t0)
-    li t1, UART_LSR
-    add t1, t0, t1
-    li t2, UART_LSR_TX_READY
+    addi t1, t0, UART_LSR
 
     1:
     lbu t3, 0(t1)
-    and t3, t2, t3
+    andi t3, t3, UART_LSR_TX_READY
     beqz t3, 1b
+
     sb a0, 0(t0)
 
     ret
@@ -159,19 +180,19 @@ uart_putc:
 uart_putc_address:
     li t0, UART_LSR
     add t0, a1, t0
-    li t1, UART_LSR_TX_READY
 
     1:
-    lbu t2, 0(t0)
-    and t2, t1, t2
-    beqz t2, 1b
+    lbu t1, 0(t0)
+    andi t1, t1, UART_LSR_TX_READY
+    beqz t1, 1b
+
     sb a0, 0(a1)
 
     ret
 
 # a0: pointer to null-terminated string
-.globl uart_printf
-uart_printf:
+.globl uart_pio_printf
+uart_pio_printf:
     addi sp, sp, -16
     sd ra, 8(sp)
     la a1, UART_BASE

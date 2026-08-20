@@ -29,8 +29,10 @@ _start:
     li a0, UART
     call uart_init
 
-    mv a0, sp
-    call uart_puthex
+    call uart_pio_getc
+
+    call uart_pio_putc
+
 
 power_off:
     li t0, SIFIVE_TEST_BASE
