@@ -13,8 +13,7 @@ Este projeto é uma implementação de um sistema operacional bare-metal escrito
 | Componente | Descrição |
 |---|---|
 | **Boot (`boot.s`)** | Ponto de entrada do kernel; inicializa o BSS, configura a stack do hart 0 e para os demais harts em `wfi` |
-| **Driver UART (`drivers/uart.s`)** | Driver para a UART NS16550A emulada pelo QEMU; suporta `uart_init`, `uart_putc` e `uart_printf` |
-| **Linker Script (`linker.ld`)** | Define o layout de memória a partir de `0x80000000`; organiza as seções `.text`, `.rodata`, `.data` e `.bss` |
+| **Driver UART (`drivers/uart_NS16550A.s`)** | Driver para a UART NS16550A emulada pelo QEMU; suporta `uart_init`, `uart_putc`, `uart_putdec`, `uart_puthex` e `uart_printf` |
 
 ### 🗺️ Mapa de Memória
 
@@ -130,14 +129,16 @@ Inicia o QEMU aguardando conexão do GDB na porta `1234`:
 make debug
 ```
 
-Em outro terminal, conecte o GDB (GNU Linux):
+Em outro terminal, conecte o GDB:
+
+#### GNU Linux
 ```bash
 gdb-multiarch kernel.elf
 (gdb) target remote :1234
 (gdb) continue
 ```
 
-Em outro terminal, conecte o GDB (MacOS):
+#### MacOS
 ```bash
 riscv64-elf-gdb kernel.elf
 (gdb) target remote :1234
@@ -170,7 +171,6 @@ OS/
     ├── virt.dts        # Device Tree Source da máquina virtual QEMU
     └── virt.dtb        # Device Tree Blob (binário compilado)
 ```
-
 ---
 
 ## ⚙️ Flags de Compilação
