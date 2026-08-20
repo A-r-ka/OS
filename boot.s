@@ -26,12 +26,6 @@ _start:
 
     la sp, hart0_stack_top
 
-    li a0, UART
-    call uart_init
-
-    mv a0, sp
-    call uart_puthex
-
 power_off:
     li t0, SIFIVE_TEST_BASE
     li t1, POWER_OFF
