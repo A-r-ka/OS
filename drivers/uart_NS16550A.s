@@ -1,4 +1,7 @@
-.equ UART_LSR, 5
+.equ UART_LSR, 0x5
+.equ UART_FIFO, 0x2
+.equ UART_FIFO_TRIGGER_LEVEL, 0x6
+.equ UART_FIFO_ENABLE, 0x1
 .equ UART_LSR_TX_READY, 0x20
 
 .bss
@@ -6,11 +9,25 @@
 
 .text
 
+.globl uart_pio_getc
+uart_pio_getc:
+
+
 # a0: UART base address
+# a1: FIFO enable (also size)
 .globl uart_init
 uart_init:
     la t0, UART_BASE
     sd a0, 0(t0)
+    bez a1, 1f
+
+    li t1, UART_FIFO
+    add t1, a0, t1
+    srli a1, a1, UART_FIFO_TRIGGER_LEVEL
+    ori a1, a1, UART_FIFO_ENABLE
+    sb a1, 0(t1)
+
+    1:
     ret
 
 # a0: hexadecimal value to print
